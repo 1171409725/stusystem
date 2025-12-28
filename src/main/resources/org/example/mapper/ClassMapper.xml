@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.ClassMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="classResultMap" type="Class">
+        <id property="id" column="id"/>
+        <result property="classNo" column="class_no"/>
+        <result property="className" column="class_name"/>
+        <result property="major" column="major"/>
+        <result property="grade" column="grade"/>
+        <result property="description" column="description"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!-- 查询所有班级 -->
+    <select id="findAll" resultMap="classResultMap">
+        SELECT * FROM class ORDER BY grade DESC, class_no
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="findById" parameterType="int" resultMap="classResultMap">
+        SELECT * FROM class WHERE id = #{id}
+    </select>
+
+    <!-- 根据班级编号查询 -->
+    <select id="findByClassNo" parameterType="string" resultMap="classResultMap">
+        SELECT * FROM class WHERE class_no = #{classNo}
+    </select>
+
+    <!-- 添加班级 -->
+    <insert id="insert" parameterType="Class" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO class(class_no, class_name, major, grade, description, create_time, update_time)
+        VALUES(#{classNo}, #{className}, #{major}, #{grade}, #{description}, NOW(), NOW())
+    </insert>
+
+    <!-- 更新班级信息 -->
+    <update id="update" parameterType="Class">
+        UPDATE class
+        SET class_no = #{classNo},
+            class_name = #{className},
+            major = #{major},
+            grade = #{grade},
+            description = #{description},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除班级 -->
+    <delete id="deleteById" parameterType="int">
+        DELETE FROM class WHERE id = #{id}
+    </delete>
+
+    <!-- 根据条件查询 -->
+    <select id="findByCondition" parameterType="Class" resultMap="classResultMap">
+        SELECT * FROM class
+        <where>
+            <if test="classNo != null and classNo != ''">
+                AND class_no LIKE CONCAT('%', #{classNo}, '%')
+            </if>
+            <if test="className != null and className != ''">
+                AND class_name LIKE CONCAT('%', #{className}, '%')
+            </if>
+            <if test="major != null and major != ''">
+                AND major LIKE CONCAT('%', #{major}, '%')
+            </if>
+            <if test="grade != null and grade != ''">
+                AND grade = #{grade}
+            </if>
+        </where>
+        ORDER BY grade DESC, class_no
+    </select>
+
+</mapper>
+

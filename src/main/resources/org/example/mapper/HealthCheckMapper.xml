@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.HealthCheckMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="healthCheckResultMap" type="HealthCheck">
+        <id property="id" column="id"/>
+        <result property="dormitoryId" column="dormitory_id"/>
+        <result property="checkDate" column="check_date"/>
+        <result property="score" column="score"/>
+        <result property="grade" column="grade"/>
+        <result property="comment" column="comment"/>
+        <result property="checkerId" column="checker_id"/>
+        <result property="checkerName" column="checker_name"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <!-- 关联宿舍信息 -->
+        <association property="dormitory" javaType="Dormitory">
+            <id property="id" column="dorm_id"/>
+            <result property="building" column="dorm_building"/>
+            <result property="roomNumber" column="dorm_room_number"/>
+        </association>
+    </resultMap>
+
+    <!-- 查询所有检查记录 -->
+    <select id="findAll" resultMap="healthCheckResultMap">
+        SELECT h.*, d.id as dorm_id, d.building as dorm_building, d.room_number as dorm_room_number
+        FROM health_check h
+        LEFT JOIN dormitory d ON h.dormitory_id = d.id
+        ORDER BY h.check_date DESC, h.create_time DESC
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="findById" parameterType="int" resultMap="healthCheckResultMap">
+        SELECT h.*, d.id as dorm_id, d.building as dorm_building, d.room_number as dorm_room_number
+        FROM health_check h
+        LEFT JOIN dormitory d ON h.dormitory_id = d.id
+        WHERE h.id = #{id}
+    </select>
+
+    <!-- 根据宿舍ID查询 -->
+    <select id="findByDormitoryId" parameterType="int" resultMap="healthCheckResultMap">
+        SELECT h.*, d.id as dorm_id, d.building as dorm_building, d.room_number as dorm_room_number
+        FROM health_check h
+        LEFT JOIN dormitory d ON h.dormitory_id = d.id
+        WHERE h.dormitory_id = #{dormitoryId}
+        ORDER BY h.check_date DESC
+    </select>
+
+    <!-- 根据检查日期查询 -->
+    <select id="findByCheckDate" parameterType="string" resultMap="healthCheckResultMap">
+        SELECT h.*, d.id as dorm_id, d.building as dorm_building, d.room_number as dorm_room_number
+        FROM health_check h
+        LEFT JOIN dormitory d ON h.dormitory_id = d.id
+        WHERE h.check_date = #{checkDate}
+        ORDER BY h.create_time DESC
+    </select>
+
+    <!-- 添加检查记录 -->
+    <insert id="insert" parameterType="HealthCheck" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO health_check(dormitory_id, check_date, score, grade, comment, checker_id, checker_name, create_time, update_time)
+        VALUES(#{dormitoryId}, #{checkDate}, #{score}, #{grade}, #{comment}, #{checkerId}, #{checkerName}, NOW(), NOW())
+    </insert>
+
+    <!-- 更新检查记录 -->
+    <update id="update" parameterType="HealthCheck">
+        UPDATE health_check
+        SET dormitory_id = #{dormitoryId},
+            check_date = #{checkDate},
+            score = #{score},
+            grade = #{grade},
+            comment = #{comment},
+            checker_id = #{checkerId},
+            checker_name = #{checkerName},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除检查记录 -->
+    <delete id="deleteById" parameterType="int">
+        DELETE FROM health_check WHERE id = #{id}
+    </delete>
+
+    <!-- 根据条件查询 -->
+    <select id="findByCondition" parameterType="HealthCheck" resultMap="healthCheckResultMap">
+        SELECT h.*, d.id as dorm_id, d.building as dorm_building, d.room_number as dorm_room_number
+        FROM health_check h
+        LEFT JOIN dormitory d ON h.dormitory_id = d.id
+        <where>
+            <if test="dormitoryId != null">
+                AND h.dormitory_id = #{dormitoryId}
+            </if>
+            <if test="checkDate != null and checkDate != ''">
+                AND h.check_date = #{checkDate}
+            </if>
+            <if test="grade != null and grade != ''">
+                AND h.grade = #{grade}
+            </if>
+            <if test="checkerId != null">
+                AND h.checker_id = #{checkerId}
+            </if>
+            <if test="checkerName != null and checkerName != ''">
+                AND h.checker_name LIKE CONCAT('%', #{checkerName}, '%')
+            </if>
+        </where>
+        ORDER BY h.check_date DESC, h.create_time DESC
+    </select>
+
+</mapper>
+
