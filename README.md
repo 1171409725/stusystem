@@ -168,7 +168,3 @@ mvn clean package
 
 本项目仅用于学习和教学 purposes。
 
-## 作者
-
-南京工程学院
-
